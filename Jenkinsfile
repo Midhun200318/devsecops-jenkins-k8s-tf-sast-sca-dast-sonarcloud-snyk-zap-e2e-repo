@@ -4,7 +4,7 @@ pipeline {
         maven 'Maven_3_8_4'  
     }
     environment {
-        MAVEN_OPTS = "-Xmx2048m -XX:MaxPermSize=512m"
+        MAVEN_OPTS = "-Xmx2048m"
     }
     stages {
         stage('CompileandRunSonarAnalysis') {
