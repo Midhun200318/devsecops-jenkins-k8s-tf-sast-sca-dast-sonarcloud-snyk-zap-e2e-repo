@@ -25,7 +25,7 @@ pipeline {
             steps { 
                 withDockerRegistry([credentialsId: "dockerlogin", url: ""]) {
                     script {
-                        def app = docker.build("mid")   // ✅ FIXED
+                        def app = docker.build("mid")   // ✅ fixed
                     }
                 }
             }
@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://787939039510.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:aws-credentials') {
-                        docker.image("mid").push("latest")   // ✅ keep simple
+                        docker.image("mid").push("latest")   // ✅ safe reference
                     }
                 }
             }
@@ -62,8 +62,8 @@ pipeline {
                     sh '''
                     TARGET=$(kubectl get svc midbuggy -n devsecops -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
                     
-                    docker run --rm -v $(pwd):/zap/wrk/:rw \
-                      owasp/zap2docker-stable \
+                    sudo docker run --rm -v $(pwd):/zap/wrk/:rw \
+                      zaproxy/zap-stable \
                       zap-baseline.py \
                       -t http://$TARGET \
                       -r zap_report.html
