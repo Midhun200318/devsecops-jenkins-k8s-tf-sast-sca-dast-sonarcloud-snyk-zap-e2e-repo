@@ -62,7 +62,7 @@ pipeline {
                     sh '''
                     TARGET=$(kubectl get svc midbuggy -n devsecops -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
                     
-                    sudo docker run --rm -v $(pwd):/zap/wrk/:rw \
+                    docker run --rm -v $(pwd):/zap/wrk/:rw \
                       zaproxy/zap-stable \
                       zap-baseline.py \
                       -t http://$TARGET \
