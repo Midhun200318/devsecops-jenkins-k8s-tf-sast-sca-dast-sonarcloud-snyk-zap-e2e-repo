@@ -25,7 +25,7 @@ pipeline {
             steps { 
                 withDockerRegistry([credentialsId: "dockerlogin", url: ""]) {
                     script {
-                        app = docker.build("mid")
+                        def app = docker.build("mid")   // ✅ FIXED
                     }
                 }
             }
@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://787939039510.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:aws-credentials') {
-                        app.push("latest")
+                        docker.image("mid").push("latest")   // ✅ keep simple
                     }
                 }
             }
@@ -59,7 +59,15 @@ pipeline {
         stage('RunDASTUsingZAP') {
             steps {
                 withKubeConfig([credentialsId: 'kubelogin']) {
-                    sh 'zap.sh -cmd -quickurl http://$(kubectl get services/midbuggy --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html'
+                    sh '''
+                    TARGET=$(kubectl get svc midbuggy -n devsecops -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+                    
+                    docker run --rm -v $(pwd):/zap/wrk/:rw \
+                      owasp/zap2docker-stable \
+                      zap-baseline.py \
+                      -t http://$TARGET \
+                      -r zap_report.html
+                    '''
                     archiveArtifacts artifacts: 'zap_report.html'
                 }
             }
